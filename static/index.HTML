@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taxie 💼 | Your Tax Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: radial-gradient(circle at top left, #d9a7c7, #fffcdc, #a18cd1, #fbc2eb);
+      background-size: 300% 300%;
+      animation: bgPulse 15s ease infinite;
+      overflow-x: hidden;
+    }
+
+    @keyframes bgPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .message {
+      animation: fadeInUp 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+      100% { transform: translateY(0px); }
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c084fc;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-heading {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .typing-dots span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin: 0 2px;
+      background-color: #999;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    @media (max-width: 768px) {
+      .ml-80 {
+        margin-left: 0 !important;
+      }
+
+      .fixed.left-20 {
+        display: none;
+      }
+    }
+
+    .email-sent {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .email-error {
+      background-color: #f44336;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .report-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .option-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .option-label {
+      font-weight: bold;
+      min-width: 120px;
+    }
+
+    .option-input {
+      flex-grow: 1;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-start justify-center p-4 relative">
+  <!-- Floating Image -->
+  <div class="fixed left-20 top-0 h-full flex items-center justify-center z-10" style="width: 300px;">
+    <img src="https://i.postimg.cc/76XQdnYG/Chat-GPT-Image-Jun-13-2025-01-59-58-PM.png"
+         alt="Taxie Chatbot"
+         class="w-full max-w-xs animate-float" />
+  </div>
+
+  <!-- Chat UI -->
+  <div class="w-full max-w-2xl glass rounded-3xl shadow-2xl p-6 flex flex-col h-[90vh] ml-80">
+    <div class="text-3xl font-bold text-gray-800 mb-4 tracking-wide chat-heading">💼 Taxie – Your Personal Tax Assistant</div>
+
+    <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg bg-white/50 shadow-inner border border-gray-200">
+      <!-- Messages will appear here -->
+    </div>
+
+    <form id="chat-form" class="mt-4 flex">
+      <textarea
+        id="chat-input"
+        placeholder="Type your message..."
+        class="flex-1 border border-gray-300 rounded-l-xl p-3 focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-800 resize-none"
+        rows="1"
+      ></textarea>
+      <button
+        type="submit"
+        class="bg-purple-600 text-white px-6 py-3 rounded-r-xl hover:bg-purple-700 transition-all font-semibold"
+      >
+        ➤
+      </button>
+    </form>
+  </div>
+
+  <script>
+    let session = { step: 0, user: {} };
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+
+    function addMessage(message, sender = 'user') {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message p-3 rounded-xl max-w-[80%] whitespace-pre-line break-words shadow-md ${
+        sender === 'user'
+          ? 'ml-auto bg-purple-600 text-white'
+          : 'bg-gray-100 text-gray-900'
+      }`;
+      
+      // Check if message contains markdown-style bullet points
+      if (message.includes('•') || message.includes('-')) {
+        const lines = message.split('\n');
+        const formattedLines = lines.map(line => {
+          if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+            return `<div class="flex items-start"><span class="mr-2">•</span><span>${line.substring(1).trim()}</span></div>`;
+          }
+          return line;
+        });
+        msgDiv.innerHTML = formattedLines.join('\n');
+      } else {
+        msgDiv.textContent = message;
+      }
+      
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function showTyping() {
+      const typing = document.createElement('div');
+      typing.className = "message typing-dots bg-gray-100 text-gray-600 p-3 rounded-xl max-w-[80%]";
+      typing.id = "typing-indicator";
+
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('span');
+        typing.appendChild(dot);
+      }
+
+      chatBox.appendChild(typing);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typing = document.getElementById("typing-indicator");
+      if (typing) typing.remove();
+    }
+
+    function hideInputForm() {
+      chatForm.classList.add('hidden');
+    }
+
+    function showReportOptions(user) {
+      const optionsDiv = document.createElement('div');
+      optionsDiv.className = 'report-options';
+      
+      const emailDiv = document.createElement('div');
+      emailDiv.className = 'option-row';
+      emailDiv.innerHTML = `
+        <span class="option-label">Email Address:</span>
+        <input type="email" id="report-email" class="option-input" value="${user.gmail}" placeholder="Enter email address">
+      `;
+      
+      const sendDiv = document.createElement('div');
+      sendDiv.className = 'option-row';
+      sendDiv.style.justifyContent = 'flex-end';
+      sendDiv.innerHTML = `
+        <button id="send-report-btn" class="send-btn">
+          📤 Send Report
+        </button>
+      `;
+      
+      optionsDiv.appendChild(emailDiv);
+      optionsDiv.appendChild(sendDiv);
+      chatBox.appendChild(optionsDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      
+      // Add event listener to send button
+      document.getElementById('send-report-btn').addEventListener('click', () => {
+        const email = document.getElementById('report-email').value.trim();
+        if (!email) {
+          alert('Please enter a valid email address');
+          return;
+        }
+        
+        // Update user email if changed
+        user.gmail = email;
+        
+        // Hide the input form
+        hideInputForm();
+        
+        // Generate and send the report
+        generateReport('email', user);
+      });
+    }
+
+    async function generateReport(type, user) {
+      try {
+        showTyping();
+        
+        const response = await fetch('http://localhost:5000/generate-report', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ user })
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        removeTyping();
+        
+        if (data.error) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'email-error';
+          errorDiv.textContent = `Oops! Couldn't generate report: ${data.error}`;
+          chatBox.appendChild(errorDiv);
+          
+          // Show the input form again if there was an error
+          chatForm.classList.remove('hidden');
+          return;
+        }
+
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'email-sent';
+        successDiv.textContent = '📨 Report sent successfully to your email! Check your inbox.';
+        chatBox.appendChild(successDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+      } catch (error) {
+        removeTyping();
+        console.error('Error generating report:', error);
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'email-error';
+        errorDiv.textContent = 'Failed to send email. Please try again later.';
+        chatBox.appendChild(errorDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // Show the input form again if there was an error
+        chatForm.classList.remove('hidden');
+      }
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, 'user');
+      chatInput.value = '';
+      showTyping();
+
+      try {
+        const res = await fetch('http://localhost:5000/chat', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ 
+            message, 
+            session 
+          })
+        });
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        session = data.session;
+        removeTyping();
+        
+        // Add delay for natural typing effect
+        setTimeout(() => {
+          addMessage(data.reply, 'bot');
+          
+          // Show report options if available
+          if (data.report_available) {
+            setTimeout(() => {
+              addMessage("Want your detailed tax report sent by email? Enter your email below and click Send Report! 📨", 'bot');
+              showReportOptions(data.user);
+            }, 500);
+          }
+        }, Math.min(2000, data.reply.length * 30));
+      } catch (error) {
+        removeTyping();
+        console.error('Error:', error);
+        addMessage("Oops! Something went wrong. Please try again.", 'bot');
+      }
+    });
+
+    chatInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    window.onload = () => {
+      setTimeout(() => addMessage("Hey! I'm Taxie 👩‍💼\n Your AI Tax calculation chatbot. Let's get started. ", 'bot'), 500);
+    };
+  </script>
+</body>
+</html>
